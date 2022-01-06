@@ -49,4 +49,4 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
 class SurveyViewSet(viewsets.ModelViewSet):
     queryset = models.survey.objects.all()
-    serializer_class = serializers.SurveySerializer
+    serializer_class = serializers.surveyDataSerializer

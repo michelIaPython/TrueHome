@@ -1,4 +1,6 @@
 # Django-res-framework
+from decimal import Context
+from django.db import models
 from rest_framework import serializers
 from rest_framework.exceptions import server_error
 
@@ -7,6 +9,7 @@ from .models import Property, Activity, survey
 
 # Python
 from datetime import datetime, date
+import datetime as date_time
 import pytz
 import re
 from datetimerange import DateTimeRange
@@ -17,28 +20,51 @@ class PropertySerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Property
-        fields = ['id','tittle','address']
+        fields = '__all__'
+
+class surveyDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model= survey
+        fields = '__all__'
         
 class SurveySerializer(serializers.HyperlinkedModelSerializer):
     """Serializer for add a new survey"""
-
     class Meta:
         model = survey
         fields = ['url']
         
 class ActivitySerializer(serializers.ModelSerializer):
     """Serializer for add a new property"""
-    condition = serializers.SerializerMethodField('get_condition_activity')
-    survey = serializers.SerializerMethodField('get_survey_link')
-    property = PropertySerializer(many=False, read_only=True)
+    condition = serializers.SerializerMethodField('get_condition_activity', read_only=True)
+    #survey_link = serializers.ReadOnlyField(source='survey.url')
+    #survey = serializers.SerializerMethodField('get_survey_link', read_only=True)
+    survey = SurveySerializer(many=False, read_only=True)
+    property_data = serializers.SerializerMethodField('get_data_property', read_only=True)
 
     #survey = SurveySerializer(many=True, read_only=True)
     class Meta:
         model = Activity
-        fields = ['id','tittle','status','property','schedule','condition','survey']
+        fields = ['id','tittle','status','property','schedule','condition','property_data','survey']
+        
+    def get_data_property(self, activity):
+        return_dict = {}
+        property_query = Property.objects.get(pk=activity.property.id)
+        return_dict['id'] = property_query.id
+        return_dict['tittle'] = property_query.tittle
+        return_dict['address'] = property_query.address
+        return return_dict
+    
     def get_survey_link(self, activity):
-        query_survey = survey.objects.all()
-        print(query_survey[0].activity.id)
+        survey_s = SurveySerializer(many=False)
+        survey_query = survey.objects.all()
+        print("QUERYYYYYYYY")
+        print(survey_s.data)
+        if not survey_query:
+            link = "not foud survey"
+        else:
+            id_survey = survey_query[0].id
+            link = f'http://127.0.0.1:8000/api/survey/{id_survey}/'
+        return link
     
     def get_condition_activity(self, activity):
         
@@ -47,9 +73,9 @@ class ActivitySerializer(serializers.ModelSerializer):
         schedule_activity = (activity_query.schedule.date())
         current_date = datetime.now().date()
         condition = "Sin condicion"
-        if schedule_activity >= current_date and bool(re.search(estate,'activate')):
+        if schedule_activity >= current_date and bool(re.search(estate,'active')):
             condition = "Pendiente a realizar"
-        elif schedule_activity <= current_date and bool(re.search(estate,'activate')):
+        elif schedule_activity <= current_date and bool(re.search(estate,'active')):
             condition = "Atrasada"
         elif bool(re.search(estate,'done')):
             condition = "Finalizada"
@@ -59,7 +85,9 @@ class ActivitySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Overide create method for make few validations"""
         
-        delta_time =  datetime.timedelta(hours=1)
+        print("IN CREATE =================")
+        print(validated_data)
+        delta_time =  date_time.timedelta(hours=1)
         activities_schedule = Activity.objects.all()
         time_range = DateTimeRange()
         for activity in activities_schedule:

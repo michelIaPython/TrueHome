@@ -8,4 +8,4 @@ from apiTH.viewsets import ActivityViewSet, PropertyViewSet, SurveyViewSet
 router = routers.DefaultRouter()
 router.register('property',PropertyViewSet)
 router.register('activity',ActivityViewSet)
-router.register('survey',SurveyViewSet)
+router.register('survey',SurveyViewSet, basename="survey")
