@@ -17,23 +17,29 @@ class PropertySerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Property
-        fields = ['tittle','address','description','status']
+        fields = ['id','tittle','address']
         
-class SurveySerializer(serializers.ModelSerializer):
+class SurveySerializer(serializers.HyperlinkedModelSerializer):
     """Serializer for add a new survey"""
 
     class Meta:
         model = survey
-        fields = '__all__'
+        fields = ['url']
         
 class ActivitySerializer(serializers.ModelSerializer):
     """Serializer for add a new property"""
     condition = serializers.SerializerMethodField('get_condition_activity')
+    survey = serializers.SerializerMethodField('get_survey_link')
     property = PropertySerializer(many=False, read_only=True)
-    
+
+    #survey = SurveySerializer(many=True, read_only=True)
     class Meta:
         model = Activity
-        fields = ['id','tittle','status','property','schedule','condition'] 
+        fields = ['id','tittle','status','property','schedule','condition','survey']
+    def get_survey_link(self, activity):
+        query_survey = survey.objects.all()
+        print(query_survey[0].activity.id)
+    
     def get_condition_activity(self, activity):
         
         activity_query = Activity.objects.get(pk=activity.id)
