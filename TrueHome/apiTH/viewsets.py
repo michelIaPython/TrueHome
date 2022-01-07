@@ -26,7 +26,7 @@ class ActivityViewSet(EnablePartianUpdateMixin, viewsets.ModelViewSet):
     serializer_class = serializers.ActivitySerializer
     # Filters 
     filter_backends = [SearchFilter]
-    search_fields = ['status']
+    search_fields = ['status','schedule']
         
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
