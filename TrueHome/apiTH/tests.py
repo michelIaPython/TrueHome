@@ -34,7 +34,6 @@ class ActivityTestCase(APITestCase):
     def test_response_succes_all(self):
         url = '/api/activity/'
         request = self.client.get(url)
-        #import pdb; pdb.set_trace()
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         
     def  test_activities_same_time(self):
@@ -54,7 +53,6 @@ class ActivityTestCase(APITestCase):
             "schedule":"2022-01-07T11:00:00Z"
             }
         response = self.client.post(url, data)
-        #import pdb;pdb.set_trace()
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     
     def test_status_activty_and_id_property(self):
@@ -80,7 +78,6 @@ class CreateAll(APITestCase):
             }
         response = self.client.post(url_property, property)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        #import pdb;pdb.set_trace()
         url_activity = '/api/activity/'
         activity = {
             "tittle":"Test Activity",
@@ -91,7 +88,6 @@ class CreateAll(APITestCase):
         response = self.client.post(url_activity, activity)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         url_survey = '/api/survey/'
-        #import pdb;pdb.set_trace()
         json_survey = json.dumps({"Test":"Test"})
         survey = {
             "answers":json_survey,
@@ -100,5 +96,45 @@ class CreateAll(APITestCase):
         response = self.client.post(url_survey, survey)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         
+class UpdateActivity(APITestCase):
+    
+    def setUp(self):
+                
+        self.property = Property.objects.create(
+            tittle = "Test Property",
+            address = "Address Test",
+            description = "Test case of a property",
+            status = "active"
+        )
+        self.activity = Activity.objects.create(
+            tittle = "Test Activity",
+            status = "active",
+            property = self.property,
+            schedule= "2022-01-07T11:00:00Z"
+        )
+        json_survey = json.dumps({"Test":"Test"})
+        self.survey =survey.objects.create( 
+            answers = json_survey,
+            activity = self.activity
+        )
+    def test_update_status(self):
+        id = self.activity.id
+        url = f"/api/activity/{id}/"
+        data = {"status":"done"}
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_status(self):
+        id = self.activity.id
+        url = f"/api/activity/{id}/"
+        data = {"schedule":"2023-01-07"}
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         
+    def test_update_many_fields(self):
+        id = self.activity.id
+        url = f"/api/activity/{id}/"
+        data = {"schedule":"2023-01-07","status":"done"}
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         

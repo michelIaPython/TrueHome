@@ -1,34 +1,29 @@
 # Django-res-framework
-from decimal import Context
-from django.db import models
 from rest_framework import serializers
-from rest_framework.exceptions import server_error
 
 # Models
 from .models import Property, Activity, survey
 
 # Python
-from datetime import datetime, date
+from datetime import datetime
 import datetime as date_time
 import pytz
 import re
 from datetimerange import DateTimeRange
-
-
 class PropertySerializer(serializers.ModelSerializer):
     """Serializer for add a new property"""
-    
     class Meta:
         model = Property
         fields = '__all__'
 
 class surveyDataSerializer(serializers.ModelSerializer):
+    """Serializer for survey like data"""
     class Meta:
         model= survey
         fields = '__all__'
         
 class SurveySerializer(serializers.HyperlinkedModelSerializer):
-    """Serializer for add a new survey"""
+    """Serializer for add a new survey like link"""
     class Meta:
         model = survey
         fields = ['url']
@@ -48,6 +43,8 @@ class ActivitySerializer(serializers.ModelSerializer):
         fields = ['id','tittle','status','property','schedule','condition','property_data','survey']
         
     def get_data_property(self, activity):
+        """Get a new field for data of property"""
+        
         return_dict = {}
         property_query = Property.objects.get(pk=activity.property.id)
         return_dict['id'] = property_query.id
@@ -56,20 +53,22 @@ class ActivitySerializer(serializers.ModelSerializer):
         return return_dict
     
     def get_condition_activity(self, activity):
+        """Get a new field for condition"""
         
         activity_query = Activity.objects.get(pk=activity.id)
         estate = activity_query.status
         schedule_activity = (activity_query.schedule.date())
         current_date = datetime.now().date()
+        active = bool(re.search(estate,'active'))
+        done = bool(re.search(estate,'done'))
         condition = "Sin condicion"
-        if schedule_activity >= current_date and bool(re.search(estate,'active')):
+        if schedule_activity >= current_date and active:
             condition = "Pendiente a realizar"
-        elif schedule_activity <= current_date and bool(re.search(estate,'active')):
+        elif schedule_activity <= current_date and active:
             condition = "Atrasada"
-        elif bool(re.search(estate,'done')):
+        elif done:
             condition = "Finalizada"
         return condition
-    
     
     def create(self, validated_data):
         """Overide create method for make few validations"""
@@ -95,6 +94,7 @@ class ActivitySerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('You can only update satatus or schedule')
         
         if "status" in validated_data:
+            
             new_status = validated_data['status']    
             Activity.objects.filter(pk=instance.id).update(**validated_data)
             
@@ -104,7 +104,8 @@ class ActivitySerializer(serializers.ModelSerializer):
             
             time_on_db = activity_data.schedule.time()
             date_in_frame = validated_data['schedule'].date()
-            update_datetime = pytz.utc.localize(datetime.datetime.combine(date_in_frame , time_on_db))
+            update_datetime = pytz.utc.localize(datetime.combine(date_in_frame, 
+                                                                 time_on_db))
             micro_seconds = validated_data['schedule'].time().microsecond
             act_status = activity_data.status
             
