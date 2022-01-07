@@ -37,8 +37,8 @@ class ActivitySerializer(serializers.ModelSerializer):
     """Serializer for add a new property"""
     condition = serializers.SerializerMethodField('get_condition_activity', read_only=True)
     #survey_link = serializers.ReadOnlyField(source='survey.url')
-    survey = serializers.SerializerMethodField('get_survey_link', read_only=True)
-    #survey = SurveySerializer(many=False, read_only=True)
+    #survey = serializers.SerializerMethodField('get_survey_link', read_only=True)
+    survey = SurveySerializer(many=False, read_only=True)
     property_data = serializers.SerializerMethodField('get_data_property', read_only=True)
 
     #survey = SurveySerializer(many=True, read_only=True)
@@ -54,18 +54,6 @@ class ActivitySerializer(serializers.ModelSerializer):
         return_dict['tittle'] = property_query.tittle
         return_dict['address'] = property_query.address
         return return_dict
-    
-    def get_survey_link(self, activity):
-        survey_s = SurveySerializer(many=False)
-        survey_query = survey.objects.all()
-        print("QUERYYYYYYYY")
-        print(survey_s.data)
-        if not survey_query:
-            link = "not foud survey"
-        else:
-            id_survey = survey_query[0].id
-            link = f'http://127.0.0.1:8000/api/survey/{id_survey}/'
-        return link
     
     def get_condition_activity(self, activity):
         
@@ -86,13 +74,10 @@ class ActivitySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Overide create method for make few validations"""
         
-        print("IN CREATE =================")
-        print(validated_data)
         delta_time =  date_time.timedelta(hours=1)
         activities_schedule = Activity.objects.all()
         time_range = DateTimeRange()
         for activity in activities_schedule:
-            print(validated_data['schedule'])
             time_plus_one_h = activity.schedule + delta_time
             time_range = DateTimeRange(activity.schedule, time_plus_one_h)
             if validated_data['schedule'] in time_range:
