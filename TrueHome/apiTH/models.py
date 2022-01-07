@@ -33,4 +33,3 @@ class survey(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     activity = models.OneToOneField(Activity, 
                                     on_delete=models.CASCADE)
-    #activity = models.ForeignKey(Activity, on_delete=models.CASCADE)

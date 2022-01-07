@@ -30,17 +30,18 @@ class SurveySerializer(serializers.HyperlinkedModelSerializer):
         
 class ActivitySerializer(serializers.ModelSerializer):
     """Serializer for add a new property"""
-    condition = serializers.SerializerMethodField('get_condition_activity', read_only=True)
-    #survey_link = serializers.ReadOnlyField(source='survey.url')
-    #survey = serializers.SerializerMethodField('get_survey_link', read_only=True)
-    survey = SurveySerializer(many=False, read_only=True)
-    property_data = serializers.SerializerMethodField('get_data_property', read_only=True)
-
-    #survey = SurveySerializer(many=True, read_only=True)
+    condition = serializers.SerializerMethodField('get_condition_activity', 
+                                                  read_only=True)
+    survey = SurveySerializer(many=False,
+                              read_only=True)
+    property_data = serializers.SerializerMethodField('get_data_property',
+                                                      read_only=True)
     class Meta:
         model = Activity
         fields = '__all__'
-        fields = ['id','tittle','status','property','schedule','condition','property_data','survey']
+        fields = ['id','tittle','status',
+                  'property','schedule','condition',
+                  'property_data','survey']
         
     def get_data_property(self, activity):
         """Get a new field for data of property"""
@@ -80,10 +81,14 @@ class ActivitySerializer(serializers.ModelSerializer):
             time_plus_one_h = activity.schedule + delta_time
             time_range = DateTimeRange(activity.schedule, time_plus_one_h)
             if validated_data['schedule'] in time_range:
-                raise serializers.ValidationError('Error can not attach the activity because the time traslape ')
+                raise serializers.ValidationError("Error can not attach the" 
+                                                  "activity because the time " 
+                                                  "traslape ")
         canceled = validated_data['property'].disable_at
         if canceled != None:
-            raise serializers.ValidationError('Error can not attach the activity because the property is deactivated ')
+            raise serializers.ValidationError("Error can not attach the "
+                                              "activity because the property is"
+                                              " deactivated ")
         return Activity.objects.create(**validated_data)
     
     def update(self, instance, validated_data):
@@ -91,7 +96,8 @@ class ActivitySerializer(serializers.ModelSerializer):
         
         activity_data = Activity.objects.get(pk=instance.id)
         if len(validated_data) > 1:
-            raise serializers.ValidationError('You can only update satatus or schedule')
+            raise serializers.ValidationError("You can only update"
+                                              " satatus or schedule")
         
         if "status" in validated_data:
             
@@ -106,14 +112,13 @@ class ActivitySerializer(serializers.ModelSerializer):
             date_in_frame = validated_data['schedule'].date()
             update_datetime = pytz.utc.localize(datetime.combine(date_in_frame, 
                                                                  time_on_db))
-            micro_seconds = validated_data['schedule'].time().microsecond
             act_status = activity_data.status
             
             if re.search(act_status, 'cancelada'):
-                raise serializers.ValidationError('The activity is in canceled status, you can not reeschedule')
-            
-            if micro_seconds != 0:
-                raise serializers.ValidationError('Error can not update the time')
+                raise serializers.ValidationError("The activity is in canceled "
+                                                  "status, you can not "
+                                                  "reeschedule")
+                
             validated_data['schedule'] = update_datetime
             Activity.objects.filter(pk=instance.id).update(**validated_data)
             

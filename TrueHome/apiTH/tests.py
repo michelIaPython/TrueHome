@@ -117,20 +117,23 @@ class UpdateActivity(APITestCase):
             answers = json_survey,
             activity = self.activity
         )
+        
     def test_update_status(self):
         id = self.activity.id
         url = f"/api/activity/{id}/"
         data = {"status":"done"}
         response = self.client.patch(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_update_status(self):
+        query_activity = Activity.objects.get(pk=id)
+        self.assertEqual(query_activity.status, "done")
+        
+    def test_update_schedule(self):
         id = self.activity.id
         url = f"/api/activity/{id}/"
         data = {"schedule":"2023-01-07"}
         response = self.client.patch(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
     def test_update_many_fields(self):
         id = self.activity.id
         url = f"/api/activity/{id}/"
