@@ -37,13 +37,14 @@ class ActivitySerializer(serializers.ModelSerializer):
     """Serializer for add a new property"""
     condition = serializers.SerializerMethodField('get_condition_activity', read_only=True)
     #survey_link = serializers.ReadOnlyField(source='survey.url')
-    #survey = serializers.SerializerMethodField('get_survey_link', read_only=True)
-    survey = SurveySerializer(many=False, read_only=True)
+    survey = serializers.SerializerMethodField('get_survey_link', read_only=True)
+    #survey = SurveySerializer(many=False, read_only=True)
     property_data = serializers.SerializerMethodField('get_data_property', read_only=True)
 
     #survey = SurveySerializer(many=True, read_only=True)
     class Meta:
         model = Activity
+        fields = '__all__'
         fields = ['id','tittle','status','property','schedule','condition','property_data','survey']
         
     def get_data_property(self, activity):
@@ -131,4 +132,3 @@ class ActivitySerializer(serializers.ModelSerializer):
             Activity.objects.filter(pk=instance.id).update(**validated_data)
             
             return activity_data
-        

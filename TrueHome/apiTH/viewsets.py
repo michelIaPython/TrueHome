@@ -4,11 +4,13 @@ from datetime import date, timedelta, datetime
 # Django
 from django.db.models import query
 from django.http import request
+from django.shortcuts import get_object_or_404
 
 # Django Rest FrameWork
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.filters import SearchFilter
 
 # Models
 from . import models
@@ -22,13 +24,17 @@ from .utils import EnablePartianUpdateMixin
 class ActivityViewSet(EnablePartianUpdateMixin, viewsets.ModelViewSet):
     queryset = models.Activity.objects.all()
     serializer_class = serializers.ActivitySerializer
-    
+    # Filters 
+    filter_backends = [SearchFilter]
+    search_fields = ['status']
+        
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         current_date = date.today()
         past_days = current_date - timedelta(3)
         post_days = current_date + timedelta(2)
         query_date = models.Activity.objects.filter(schedule__gte=past_days , schedule__lte=post_days)
+        #query_date = get_object_or_404(models.Activity, schedule__gte=past_days , schedule__lte=post_days)
         #print(query_date)
         #print("CURRENT DAY : ",current_date)
         #print("OLD Date : ",current_date - timedelta(3))

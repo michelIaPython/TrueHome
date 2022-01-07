@@ -37,9 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    #'rest_framework_filters',
     'rest_framework',
-    'rest_framework.authtoken',
     'apiTH',
+    #'django_filters',
     ]
 
 MIDDLEWARE = [
@@ -93,6 +94,7 @@ DATABASES = {
 
     }
 }
+
 
 
 # Password validation
