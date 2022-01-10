@@ -57,12 +57,12 @@ class ActivitySerializer(serializers.ModelSerializer):
         """Get a new field for condition"""
         
         activity_query = Activity.objects.get(pk=activity.id)
-        estate = activity_query.status
+        estate = activity_query.status.lower()
         schedule_activity = (activity_query.schedule.date())
         current_date = datetime.now().date()
         active = bool(re.search(estate,'active'))
         done = bool(re.search(estate,'done'))
-        condition = "Sin condicion"
+        condition = "Actividad cancelada"
         if schedule_activity >= current_date and active:
             condition = "Pendiente a realizar"
         elif schedule_activity <= current_date and active:
@@ -84,11 +84,14 @@ class ActivitySerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Error can not attach the" 
                                                   "activity because the time " 
                                                   "traslape ")
-        canceled = validated_data['property'].disable_at
-        if canceled != None:
+        #canceled = validated_data['property'].disable_at
+        porperty_canceled = validated_data['property'].status.lower()
+        property_canceled_bool = re.search(porperty_canceled,
+                                           'canceled')
+        if property_canceled_bool:
             raise serializers.ValidationError("Error can not attach the "
                                               "activity because the property is"
-                                              " deactivated ")
+                                              " canceled ")
         return Activity.objects.create(**validated_data)
     
     def update(self, instance, validated_data):
@@ -112,9 +115,9 @@ class ActivitySerializer(serializers.ModelSerializer):
             date_in_frame = validated_data['schedule'].date()
             update_datetime = pytz.utc.localize(datetime.combine(date_in_frame, 
                                                                  time_on_db))
-            act_status = activity_data.status
+            act_status = activity_data.status.lower()
             
-            if re.search(act_status, 'cancelada'):
+            if re.search(act_status, 'canceled'):
                 raise serializers.ValidationError("The activity is in canceled "
                                                   "status, you can not "
                                                   "reeschedule")
