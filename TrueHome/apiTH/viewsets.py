@@ -28,7 +28,7 @@ class ActivityViewSet(EnablePartianUpdateMixin, viewsets.ModelViewSet):
     
     def get_queryset(self):
         current_date = date.today()
-        past_days = current_date - timedelta(3)
+        past_days = current_date - timedelta(4)
         post_days = current_date + timedelta(3)
         query = models.Activity.objects.filter(schedule__gte=past_days,
                                                     schedule__lte=post_days)

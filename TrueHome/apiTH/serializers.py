@@ -84,7 +84,6 @@ class ActivitySerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Error can not attach the" 
                                                   "activity because the time " 
                                                   "traslape ")
-        #canceled = validated_data['property'].disable_at
         porperty_canceled = validated_data['property'].status.lower()
         property_canceled_bool = re.search(porperty_canceled,
                                            'canceled')
